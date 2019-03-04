@@ -1,0 +1,49 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "prettier"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true,
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "env": {
+    "browser": true,
+    "mocha": true,
+    "node": true
+  },
+  "rules": {
+    "react/jsx-uses-react": 1,
+    "react/jsx-no-undef": 2,
+    "react/jsx-wrap-multilines": 2,
+    "react/no-string-refs": 0,
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "trailingComma": "all"
+      }
+    ],
+    "eqeqeq": ["error", "always"],
+    "no-return-await": 2,
+    "require-await": 2,
+    "comma-dangle": ["error", "always-multiline"],
+    "semi": ["error", "always"],
+    "no-console": 0
+  },
+  "plugins": [
+    "react",
+    "prettier"
+  ],
+  "globals": {
+    "localStorage": false,
+    "Promise": false,
+    "google": false
+  }
+}
