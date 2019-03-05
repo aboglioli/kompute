@@ -2,9 +2,10 @@
   "name": "kompute",
   "version": "0.1.0",
   "description": "Computed properties in a fancier way",
-  "main": "dist/kompute.min.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "mocha"
+    "lint": "eslint --fix lib/ test/",
+    "test": "cross-env NODE_ENV=test jest test"
   },
   "repository": {
     "type": "git",
@@ -16,7 +17,16 @@
     "url": "https://github.com/aboglioli/kompute/issues"
   },
   "homepage": "https://github.com/aboglioli/kompute#readme",
-  "dependencies": {
-    "mocha": "^6.0.2"
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "cross-env": "^5.2.0",
+    "eslint": "^5.15.0",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-jest": "^22.3.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "jest": "^24.1.0",
+    "lodash.clonedeep": "^4.5.0",
+    "prettier": "^1.16.4"
   }
 }

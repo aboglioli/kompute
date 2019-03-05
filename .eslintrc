@@ -2,27 +2,25 @@
   "parser": "babel-eslint",
   "extends": [
     "eslint:recommended",
-    "plugin:react/recommended",
+    "plugin:jest/recommended",
     "prettier"
   ],
   "parserOptions": {
     "ecmaVersion": 6,
     "sourceType": "module",
     "ecmaFeatures": {
-      "jsx": true,
-      "experimentalObjectRestSpread": true
+      "experimentalObjectRestSpread": true,
+      "jsx": true
     }
   },
   "env": {
+    "es6": true,
     "browser": true,
     "mocha": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
   "rules": {
-    "react/jsx-uses-react": 1,
-    "react/jsx-no-undef": 2,
-    "react/jsx-wrap-multilines": 2,
-    "react/no-string-refs": 0,
     "prettier/prettier": [
       "error",
       {
@@ -38,12 +36,14 @@
     "no-console": 0
   },
   "plugins": [
-    "react",
+    "jest",
     "prettier"
   ],
   "globals": {
-    "localStorage": false,
-    "Promise": false,
-    "google": false
+    "require": false,
+    "module": false,
+    "process": false,
+    "__filename": false,
+    "__dirname": false,
   }
 }
