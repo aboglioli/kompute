@@ -122,15 +122,15 @@ const simple = [
     id: 'element2',
     value: {
       dependsOn: ['element1.value'],
-      compute: (_, [firstItem]) => firstItem.value * 2,
+      compute: (_, [firstItem]) => firstItem.value * 2, // 4
     },
   },
   {
     id: 'element3',
     relatedTo: 'element1',
     value: {
-      dependsOn: item => [`${item.relatedTo}.value`],
-      compute: (_, [firstItem]) => firstItem.value * 3,
+      dependsOn: item => [`${item.relatedTo}.value`, 'element2.value'],
+      compute: (_, [element1, element2]) => element1.value * 3 + element2.value, // 6 + 4
     },
   },
 ];
@@ -147,7 +147,16 @@ const deepFields = [
     data: {
       value: {
         dependsOn: ['001.data.value'],
-        compute: (item, [firstItem]) => `${item.id}.${firstItem.id}`,
+        compute: (item, [firstItem]) => firstItem.data.value * 2, // 18
+      },
+    },
+  },
+  {
+    id: '003',
+    data: {
+      value: {
+        dependsOn: ['001.data.value', '002.data.value'],
+        compute: (item, [one, two]) => one.data.value + two.data.value, // 9 + 18
       },
     },
   },
