@@ -1,6 +1,22 @@
 const cloneDeep = require('lodash.clonedeep');
 
-const { calculateCost } = require('./helpers');
+// Products: complex example
+const units = {
+  kg: 1000,
+  g: 1,
+  u: 1, // dimensionless unit
+};
+
+const normalize = (value, unitName) => value * units[unitName];
+
+const calculateCost = (quantity, cost) => {
+  // normalized quantity value
+  const nQuantityValue = normalize(quantity.value, quantity.unit);
+  // normalized cost quantity value
+  const nCostQuantityValue = normalize(cost.quantity.value, cost.quantity.unit);
+
+  return nQuantityValue * (cost.value / nCostQuantityValue);
+};
 
 const computedCost = {
   dependsOn: item => item.composition.map(comp => `${comp.of}.cost`),
@@ -113,7 +129,30 @@ const products = [
   },
 ];
 
+// Simple
 const simple = [
+  {
+    id: 'id01',
+    value: 2,
+  },
+  {
+    id: 'id02',
+    value: {
+      dependsOn: ['id01.value'],
+      compute: (_, [id01]) => id01.value * 2,
+    },
+  },
+  {
+    id: 'id03',
+    value: {
+      dependsOn: ['id01.value'],
+      compute: (_, [id01]) => id01.value * 3,
+    },
+  },
+];
+
+// Dependency between kompute objects
+const dependencies = [
   {
     id: 'element1',
     value: 2,
@@ -135,6 +174,7 @@ const simple = [
   },
 ];
 
+// Deep fields
 const deepFields = [
   {
     id: '001',
@@ -165,5 +205,6 @@ const deepFields = [
 module.exports = {
   getProducts: () => cloneDeep(products),
   getSimple: () => cloneDeep(simple),
+  getDependencies: () => cloneDeep(dependencies),
   getDeepFields: () => cloneDeep(deepFields),
 };
