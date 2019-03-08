@@ -14,17 +14,24 @@ describe('Kompute', () => {
 
   test('Instantiate Kompute and merge default options', () => {
     const simple = getSimple();
-    const kompute = new Kompute(simple, { makeDependencyTree: false });
+    const kompute = new Kompute(simple, {
+      makeDependencyTree: false,
+      initialComputation: false,
+    });
     expect(kompute).toBeDefined();
     expect(kompute.arr).toEqual(simple);
-    expect(kompute.tree).toEqual({});
+    expect(kompute.tree).toEqual([]);
     expect(typeof kompute.options.getId).toBe('function');
     expect(kompute.options.makeDependencyTree).toBe(false);
+    expect(kompute.options.initialComputation).toBe(false);
   });
 
   test('findItemById in inner array', () => {
     const simple = getSimple();
-    const kompute = new Kompute(simple, { makeDependencyTree: false });
+    const kompute = new Kompute(simple, {
+      makeDependencyTree: false,
+      initialComputation: false,
+    });
     const item = kompute.findItemById('id02');
     expect(item).toEqual(simple[1]);
   });
@@ -37,7 +44,39 @@ describe('Kompute', () => {
     });
     kompute.makeDependencyTree();
 
-    console.log(kompute.tree);
+    expect(kompute.arr).toEqual(simple);
+    expect(kompute.tree).toHaveLength(2);
+    expect(Object.keys(kompute.tree[1])).toEqual([
+      'prop',
+      'dependsOn',
+      'compute',
+    ]);
+    expect(kompute.tree[1].prop).toEqual('id03.value');
+    expect(kompute.tree[1].dependsOn).toEqual(['id01.value']);
+    expect(typeof kompute.tree[1].compute).toEqual('function');
+  });
+
+  test('makeDependencyTree with initial computation', () => {
+    const simple = getSimple();
+    const kompute = new Kompute(simple, {
+      makeDependencyTree: true,
+      initialComputation: true,
+    });
+
+    expect(kompute.arr).toEqual([
+      {
+        id: 'id01',
+        value: 2,
+      },
+      {
+        id: 'id02',
+        value: 4,
+      },
+      {
+        id: 'id03',
+        value: 6,
+      },
+    ]);
   });
 
   test.skip('Return computed array', () => {
