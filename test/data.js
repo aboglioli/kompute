@@ -145,31 +145,31 @@ const simple = [
   {
     id: 'id03',
     value: {
-      dependsOn: ['id01.value'],
+      dependsOn: 'id01.value',
       compute: (_, [id01]) => id01.value * 3,
     },
   },
 ];
 
 // Dependency between kompute objects
-const dependencies = [
+const complexDependencies = [
   {
     id: 'element1',
     value: 2,
   },
   {
     id: 'element2',
+    relatedTo: 'element3',
     value: {
-      dependsOn: ['element1.value'],
-      compute: (_, [firstItem]) => firstItem.value * 2, // 4
+      dependsOn: item => [`${item.relatedTo}.value`, 'element1.value'],
+      compute: (_, [element3, element1]) => element3.value * element1.value, // 6 + 2
     },
   },
   {
     id: 'element3',
-    relatedTo: 'element1',
     value: {
-      dependsOn: item => [`${item.relatedTo}.value`, 'element2.value'],
-      compute: (_, [element1, element2]) => element1.value * 3 + element2.value, // 6 + 4
+      dependsOn: ['element1.value'],
+      compute: (_, [element1]) => element1.value * 3, // 6
     },
   },
 ];
@@ -205,6 +205,6 @@ const deepFields = [
 module.exports = {
   getProducts: () => cloneDeep(products),
   getSimple: () => cloneDeep(simple),
-  getDependencies: () => cloneDeep(dependencies),
+  getComplexDependencies: () => cloneDeep(complexDependencies),
   getDeepFields: () => cloneDeep(deepFields),
 };

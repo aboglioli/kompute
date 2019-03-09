@@ -36,7 +36,55 @@ describe('Kompute class', () => {
     expect(item).toEqual(simple[1]);
   });
 
-  test('makeDependencyTree without initial computation', () => {
+  test('dependsOn must be a string, an array or a function', () => {
+    const kompute = new Kompute(
+      [
+        ...getSimple(),
+        {
+          id: 'id04',
+          value: {
+            dependsOn: { obj: true },
+            compute: () => {},
+          },
+        },
+      ],
+      { makeDependencyTree: false, initialComputation: false },
+    );
+
+    try {
+      kompute.makeDependencyTree();
+    } catch (err) {
+      expect(err.message).toBe(
+        '"dependsOn" must be a string, an array or a function. Found "object" on id04.value',
+      );
+    }
+  });
+
+  test('compute must be a function', () => {
+    const kompute = new Kompute(
+      [
+        ...getSimple(),
+        {
+          id: 'id04',
+          value: {
+            dependsOn: 'id01.value',
+            compute: { obj: true },
+          },
+        },
+      ],
+      { makeDependencyTree: false, initialComputation: false },
+    );
+
+    try {
+      kompute.makeDependencyTree();
+    } catch (err) {
+      expect(err.message).toBe(
+        '"compute" must be a function. Found "object" on id04.value',
+      );
+    }
+  });
+
+  test('makeDependencyTree without initial computation (simple)', () => {
     const simple = getSimple();
     const kompute = new Kompute(simple, {
       makeDependencyTree: false,
@@ -56,7 +104,7 @@ describe('Kompute class', () => {
     expect(typeof kompute.tree[1].compute).toEqual('function');
   });
 
-  test('makeDependencyTree with initial computation', () => {
+  test('makeDependencyTree with initial computation (simple)', () => {
     const simple = getSimple();
     const kompute = new Kompute(simple, {
       makeDependencyTree: true,
@@ -80,7 +128,7 @@ describe('Kompute class', () => {
   });
 });
 
-describe('kompute lib', () => {
+describe('kompute lib and Proxy wrapper', () => {
   test('default options', () => {
     const simple = getSimple();
     const k = kompute(simple);
@@ -100,5 +148,12 @@ describe('kompute lib', () => {
         value: 6,
       },
     ]);
+  });
+
+  test('isOserved property', () => {
+    const arr = kompute(getSimple());
+    expect(arr[0].isObserved).toBe(true);
+    expect(arr[1].isObserved).toBe(false);
+    expect(arr[2].isObserved).toBe(false);
   });
 });
