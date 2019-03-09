@@ -156,4 +156,11 @@ describe('kompute lib and Proxy wrapper', () => {
     expect(arr[1].isObserved).toBe(false);
     expect(arr[2].isObserved).toBe(false);
   });
+
+  test('observedBy property', () => {
+    const arr = kompute(getSimple());
+    expect(arr[0].observedBy).toEqual(['id02.value', 'id03.value']);
+    expect(arr[1].observedBy).toEqual([]);
+    expect(arr[2].observedBy).toEqual([]);
+  });
 });
