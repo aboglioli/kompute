@@ -161,8 +161,13 @@ const complexDependencies = [
     id: 'element2',
     relatedTo: 'element3',
     value: {
-      dependsOn: item => [`${item.relatedTo}.value`, 'element1.value'],
-      compute: (_, [element3, element1]) => element3.value * element1.value, // 6 + 2
+      dependsOn: item => [
+        `${item.relatedTo}.value`,
+        'element1.value',
+        'element4.value',
+      ],
+      compute: (_, [element3, element1, element4]) =>
+        element3.value * element1.value + element4.value, // 6 * 2 + 12 = 24
     },
   },
   {
@@ -170,6 +175,13 @@ const complexDependencies = [
     value: {
       dependsOn: ['element1.value'],
       compute: (_, [element1]) => element1.value * 3, // 6
+    },
+  },
+  {
+    id: 'element4',
+    value: {
+      dependsOn: ['element1.value', 'element3.value'],
+      compute: (_, [element1, element3]) => element1.value * element3.value, // 2 * 6 = 12
     },
   },
 ];

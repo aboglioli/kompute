@@ -17,7 +17,9 @@
     "url": "https://github.com/aboglioli/kompute/issues"
   },
   "homepage": "https://github.com/aboglioli/kompute#readme",
-  "dependencies": {},
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
     "cross-env": "^5.2.0",
