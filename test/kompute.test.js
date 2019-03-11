@@ -5,6 +5,7 @@ const {
   splitPath,
   makeDependencyTree,
   compute,
+  wrap,
 } = require('../lib/kompute');
 
 const kompute = require('../lib');
@@ -398,6 +399,173 @@ describe('Utils', () => {
       value: 'id02:str1.(id03:str1.str3-other3).str2',
     });
     expect(computed[2]).toEqual({ id: 'id03', value: 'id03:str1.str3' });
+  });
+
+  test('compute complex and deep dependent properties', () => {
+    const tree = [
+      {
+        prop: 'id02.data.result.value',
+        dependsOn: [
+          'id01.data.value',
+          'id01.data.subdata.multiplier',
+          'id03.data.result.value',
+        ],
+        compute: jest.fn(
+          (item, [el1, el3]) =>
+            el1.data.value *
+            el1.data.subdata.multiplier *
+            el3.data.result.value,
+        ), // 3 * 2 * 4 = 24
+      },
+      {
+        prop: 'id03.data.result.value',
+        dependsOn: ['id01.data.value'],
+        compute: (item, [el1]) => el1.data.value + 1, // 4
+      },
+    ];
+
+    const computed = compute({
+      getId,
+      arr: [
+        {
+          id: 'id01',
+          data: {
+            value: 3,
+            subdata: {
+              multiplier: 2,
+            },
+          },
+        },
+        {
+          id: 'id02',
+          data: { result: { value: 0 } },
+        },
+        {
+          id: 'id03',
+          data: { result: { value: 0 } },
+        },
+      ],
+      tree,
+    });
+    expect(computed).toBeDefined();
+    expect(computed).toHaveLength(3);
+    expect(computed[0]).toEqual({
+      id: 'id01',
+      data: { value: 3, subdata: { multiplier: 2 } },
+    });
+    expect(computed[1]).toEqual({
+      id: 'id02',
+      data: {
+        result: {
+          value: 24,
+        },
+      },
+    });
+    expect(computed[2]).toEqual({
+      id: 'id03',
+      data: {
+        result: {
+          value: 4,
+        },
+      },
+    });
+
+    expect(tree[0].compute.mock.calls.length).toBe(1);
+    expect(tree[0].compute.mock.calls[0][1]).toHaveLength(2);
+    expect(tree[0].compute.mock.results[0].value).toBe(24);
+
+    expect(tree[1].compute.mock.calls.length).toBe(1);
+    expect(tree[1].compute.mock.calls[0][1]).toHaveLength(1);
+    expect(tree[1].compute.mock.results[0].value).toBe(4);
+  });
+
+  test('wrap and update item directly', () => {
+    let calls = 0;
+    const wrapped = wrap({
+      getId,
+      arr: [
+        {
+          id: 'id01',
+          data: 23,
+          multiplier: 2,
+        },
+        {
+          id: 'id02',
+          data: 0,
+        },
+      ],
+      tree: [
+        {
+          prop: 'id02.data',
+          dependsOn: ['id01.data'],
+          compute: (_, [el1]) => {
+            calls++;
+            return el1.data * el1.multiplier;
+          },
+        },
+      ],
+    });
+    expect(wrapped[1].data).toBe(0);
+
+    wrapped[0].data = 15;
+    expect(wrapped[1].data).toBe(30);
+
+    // item 1 is not watching for changes on "multiplier"
+    wrapped[0].multiplier = 3;
+    expect(wrapped[1].data).toBe(30);
+
+    wrapped[0].data = 20;
+    expect(wrapped[1].data).toBe(60);
+
+    expect(calls).toBe(2);
+  });
+
+  test('wrap deep dependencies and update item indirectly', () => {
+    const tree = [
+      {
+        prop: 'id02.data.value',
+        dependsOn: ['id01.data.value', 'id01.data.multiplier'],
+        compute: jest.fn((_, [el1]) => el1.data * el1.multiplier),
+      },
+    ];
+
+    const wrapped = wrap({
+      getId,
+      arr: [
+        {
+          id: 'id01',
+          data: {
+            value: 12,
+            multiplier: 2,
+          },
+        },
+        {
+          id: 'id02',
+          data: {
+            value: 24,
+          },
+        },
+      ],
+      tree,
+    });
+    expect(wrapped[1].data).toEqual({ value: 24 });
+
+    wrapped[0].data.value = 15;
+    expect(wrapped[1].data).toEqual({ value: 30 });
+
+    wrapped[0].data.multiplier = 3;
+    expect(wrapped[1].data).toEqual({ value: 45 });
+
+    wrapped[0].data = { value: 5, multiplier: 2 };
+    expect(wrapped[1].data).toEqual({ value: 10 });
+
+    expect(tree[0].mock.calls.length).toBe(3);
+    expect(tree[0].mock.calls[0][1].length).toBe(1);
+    expect(tree[0].mock.calls[1][1].length).toBe(1);
+    expect(tree[0].mock.calls[2][1].length).toBe(1);
+    expect(tree[0].mock.results[0].value).toBe(30);
+    expect(tree[0].mock.results[1].value).toBe(45);
+    expect(tree[0].mock.results[2].value).toBe(10);
   });
 });
 
