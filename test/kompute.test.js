@@ -89,12 +89,12 @@ describe('Utils', () => {
 
     [id, path, prop] = splitPath('element3');
     expect(id).toBe('element3');
-    expect(path).not.toBeDefined();
+    expect(path).toBe('');
     expect(prop).not.toBeDefined();
 
     [id, path, prop] = splitPath('element3.value');
     expect(id).toBe('element3');
-    expect(path).not.toBeDefined();
+    expect(path).toBe('');
     expect(prop).toBe('value');
   });
 
