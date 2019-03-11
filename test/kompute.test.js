@@ -202,7 +202,9 @@ describe('Utils', () => {
         },
       ]);
     } catch (err) {
-      expect(err.message).toBe('Invalid path in dependsOn of el02: property must be specified');
+      expect(err.message).toBe(
+        'Invalid path in dependsOn of el02: property must be specified',
+      );
     }
 
     try {
@@ -220,7 +222,9 @@ describe('Utils', () => {
         },
       ]);
     } catch (err) {
-      expect(err.message).toBe('Invalid path in dependsOn of el02: "prop" does not exist');
+      expect(err.message).toBe(
+        'Invalid path in dependsOn of el02: "prop" does not exist',
+      );
     }
   });
 
@@ -240,7 +244,9 @@ describe('Utils', () => {
         },
       ]);
     } catch (err) {
-      expect(err.message).toBe('dependsOn must be a string, an array or a function');
+      expect(err.message).toBe(
+        'dependsOn must be a string, an array or a function',
+      );
     }
   });
 
@@ -402,181 +408,5 @@ describe('Lib', () => {
     } catch (err) {
       expect(err.message).toBe('First argument must be an Array');
     }
-  });
-});
-
-describe('Kompute', () => {
-  test('makeDependencyTree without initial computation (simple)', () => {
-    const simple = getSimple();
-    const kompute = new Kompute(simple, {
-      makeDependencyTree: false,
-      initialComputation: false,
-    });
-    kompute.makeDependencyTree();
-
-    expect(kompute.arr).toEqual(simple);
-    expect(kompute.tree).toHaveLength(2);
-    expect(Object.keys(kompute.tree[1])).toEqual([
-      'prop',
-      'dependsOn',
-      'compute',
-    ]);
-    expect(kompute.tree[1].prop).toEqual('id03.value');
-    expect(kompute.tree[1].dependsOn).toEqual(['id01.value']);
-    expect(typeof kompute.tree[1].compute).toEqual('function');
-  });
-
-  test('makeDependencyTree with initial computation (simple)', () => {
-    const simple = getSimple();
-    const kompute = new Kompute(simple, {
-      makeDependencyTree: true,
-      initialComputation: true,
-    });
-
-    expect(kompute.arr).toEqual([
-      {
-        id: 'id01',
-        value: 2,
-      },
-      {
-        id: 'id02',
-        value: 4,
-      },
-      {
-        id: 'id03',
-        value: 6,
-      },
-    ]);
-  });
-
-  test('lib default options', () => {
-    const simple = getSimple();
-    const k = kompute(simple);
-    expect(Array.isArray(k)).toBe(true);
-    expect(k).toHaveLength(simple.length);
-    expect(k).toEqual([
-      {
-        id: 'id01',
-        value: 2,
-      },
-      {
-        id: 'id02',
-        value: 4,
-      },
-      {
-        id: 'id03',
-        value: 6,
-      },
-    ]);
-  });
-
-  test('isOserved property', () => {
-    const arr = kompute(getSimple());
-    expect(arr[0].isObserved).toBe(true);
-    expect(arr[1].isObserved).toBe(false);
-    expect(arr[2].isObserved).toBe(false);
-  });
-
-  test('observedBy property', () => {
-    const arr = kompute(getSimple());
-    expect(arr[0].observedBy).toEqual(['id02.value', 'id03.value']);
-    expect(arr[1].observedBy).toEqual([]);
-    expect(arr[2].observedBy).toEqual([]);
-  });
-
-  test('compute single item with simple dependencies', () => {
-    const arr = [
-      {
-        id: 'element1',
-        value: 5,
-      },
-      {
-        id: 'element2',
-        value: 8,
-      },
-    ];
-
-    const computeItem = new Kompute([]).computeItem.bind({
-      getId: item => item.id,
-      findItemById: id => arr.find(item => item.id === id),
-      tree: [
-        {
-          prop: 'element2.value',
-          dependsOn: ['element1.value'],
-          compute: (item, [element1]) => element1.value * 2,
-        },
-      ],
-      arr,
-    });
-    computeItem('element2.value');
-    expect(arr[1].value).toBe(10);
-
-    try {
-      computeItem('element1.value');
-    } catch (err) {
-      expect(err.message).toBe('element1.value is not a computed property');
-    }
-  });
-
-  test('compute single item with complex dependencies', () => {
-    const arr = [
-      {
-        id: 'element1',
-        value: 5,
-      },
-      {
-        id: 'element2',
-        value: 0,
-      },
-      {
-        id: 'element3',
-        value: 0,
-      },
-    ];
-
-    const computeItem = new Kompute([]).computeItem.bind({
-      getId: item => item.id,
-      findItemById: id => arr.find(item => item.id === id),
-      tree: [
-        {
-          prop: 'element2.value',
-          dependsOn: ['element3.value'],
-          compute: (item, [element1]) => element1.value * 2, // 20
-        },
-        {
-          prop: 'element3.value',
-          dependsOn: ['element1.value'],
-          compute: (item, [element1]) => element1.value * 2, // 10
-        },
-      ],
-      arr,
-    });
-    computeItem('element2.value');
-    expect(arr[0].value).toBe(5);
-    expect(arr[1].value).toBe(20);
-    expect(arr[2].value).toBe(10);
-  });
-
-  test.skip('complexDependencies', () => {
-    const kompute = new Kompute(getComplexDependencies());
-    expect(kompute.arr).toEqual([
-      {
-        id: 'element1',
-        value: 2,
-      },
-      {
-        id: 'element2',
-        relatedTo: 'element3',
-        value: 24,
-      },
-      {
-        id: 'element3',
-        value: 6,
-      },
-      {
-        id: 'element4',
-        value: 12,
-      },
-    ]);
   });
 });
