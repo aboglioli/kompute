@@ -6,6 +6,7 @@ const {
   findDependentNodes,
   splitPath,
   getValue,
+  getElement,
   checkCircularDependencies,
   makeDependencyTree,
   compute,
@@ -109,7 +110,7 @@ describe('Utils', () => {
     expect(prop).toBe('value');
   });
 
-  test('getValue', () => {
+  test('getValue and getElement', () => {
     const arr = [
       {
         id: 'id01',
@@ -132,6 +133,7 @@ describe('Utils', () => {
       },
     ];
 
+    // Value
     expect(getValue({ getId, arr }, 'id01.value')).toBe(123);
     expect(getValue({ getId, arr }, 'id02.data.value')).toBe(124);
     expect(getValue({ getId, arr }, 'id03.data.subdata.value')).toBe(125);
@@ -150,6 +152,25 @@ describe('Utils', () => {
     expect(getValue({ getId, arr }, 'id04.value')).not.toBeDefined();
     expect(getValue({ getId, arr }, 'id05')).not.toBeDefined();
     expect(getValue({ getId, arr }, '')).not.toBeDefined();
+
+    // Element
+    expect(getElement({ getId, arr }, 'id01.value')).toEqual([
+      { id: 'id01', value: 123 },
+      'value',
+    ]);
+    expect(getElement({ getId, arr }, 'id03.data.subdata.value')).toEqual([
+      { value: 125 },
+      'value',
+    ]);
+    expect(getElement({ getId, arr }, 'id03.data.multiplier')).toEqual([
+      { subdata: { value: 125 }, multiplier: 126 },
+      'multiplier',
+    ]);
+
+    expect(getElement({ getId, arr }, 'id04.data.other')).toEqual([
+      undefined,
+      'other',
+    ]);
   });
 
   test('checkCircularDependencies in tree', () => {
