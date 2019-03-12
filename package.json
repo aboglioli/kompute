@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint --fix lib/ test/",
-    "test": "cross-env NODE_ENV=test jest test"
+    "test": "cross-env NODE_ENV=test jest test",
+    "test:watch": "cross-env NODE_ENV=test nodemon -e js -x jest test"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,8 @@
     "eslint-plugin-prettier": "^3.0.1",
     "jest": "^24.1.0",
     "lodash.clonedeep": "^4.5.0",
+    "lodash.omit": "^4.5.0",
+    "nodemon": "^1.18.10",
     "prettier": "^1.16.4"
   }
 }
