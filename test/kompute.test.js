@@ -846,7 +846,11 @@ describe('Utils', () => {
       id: 'id02',
       value: 'id02:str1.(id03:str1.str3-other3).str2',
     });
-    expect(computed[2]).toEqual({ id: 'id03', value: 'id03:str1.str3', other: 'other3' });
+    expect(computed[2]).toEqual({
+      id: 'id03',
+      value: 'id03:str1.str3',
+      other: 'other3',
+    });
   });
 
   test('compute complex and deep dependent properties', () => {
