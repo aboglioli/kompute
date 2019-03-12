@@ -828,7 +828,7 @@ describe('Utils', () => {
       {
         prop: 'id03.data.result.value',
         dependsOn: ['id01.data.value'],
-        compute: (item, [el1]) => el1.data.value + 1, // 4
+        compute: jest.fn((item, [el1]) => el1.data.value + 1), // 4
       },
     ];
 
@@ -857,6 +857,15 @@ describe('Utils', () => {
         },
       ],
     );
+
+    expect(tree[0].compute.mock.calls.length).toBe(1);
+    expect(tree[0].compute.mock.calls[0][1]).toHaveLength(2);
+    expect(tree[0].compute.mock.results[0].value).toBe(24);
+
+    expect(tree[1].compute.mock.calls.length).toBe(1);
+    expect(tree[1].compute.mock.calls[0][1]).toHaveLength(1);
+    expect(tree[1].compute.mock.results[0].value).toBe(4);
+
     expect(computed).toBeDefined();
     expect(computed).toHaveLength(3);
     expect(computed[0]).toEqual({
@@ -879,14 +888,6 @@ describe('Utils', () => {
         },
       },
     });
-
-    expect(tree[0].compute.mock.calls.length).toBe(1);
-    expect(tree[0].compute.mock.calls[0][1]).toHaveLength(2);
-    expect(tree[0].compute.mock.results[0].value).toBe(24);
-
-    expect(tree[1].compute.mock.calls.length).toBe(1);
-    expect(tree[1].compute.mock.calls[0][1]).toHaveLength(1);
-    expect(tree[1].compute.mock.results[0].value).toBe(4);
   });
 
   test('compute simple and deep field dependencies', () => {
@@ -945,7 +946,7 @@ describe('Utils', () => {
         },
       ],
     );
-    expect(computed[1].data).toEqual({ value: 4, multiplier: 3 });
+    expect(computed[0].data).toEqual({ value: 4, multiplier: 3 });
     expect(computed[2].data).toEqual({ result: 12 });
     expect(computed[3].str).toBe('Result: 12');
 

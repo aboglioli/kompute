@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/aboglioli/kompute#readme",
   "dependencies": {
-    "lodash.get": "^4.4.2"
+    "lodash.get": "^4.4.2",
+    "lodash.uniq": "^4.5.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
