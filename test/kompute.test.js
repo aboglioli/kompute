@@ -764,13 +764,13 @@ describe('Utils', () => {
         getId,
         tree: [
           {
-            prop: 'id02.computed',
-            dependsOn: ['id01.computed', 'id03.computed'],
+            prop: 'id03.computed',
+            dependsOn: ['id04.computed'],
             compute: computeFn,
           },
           {
-            prop: 'id03.computed',
-            dependsOn: ['id04.computed'],
+            prop: 'id02.computed',
+            dependsOn: ['id01.computed', 'id03.computed'],
             compute: computeFn,
           },
           {
