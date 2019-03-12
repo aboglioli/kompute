@@ -191,19 +191,23 @@ describe('Utils', () => {
 
     // Element
     expect(getElement({ getId, arr }, 'id01.value')).toEqual([
+      arr[0],
       { id: 'id01', value: 123 },
       'value',
     ]);
     expect(getElement({ getId, arr }, 'id03.data.subdata.value')).toEqual([
+      arr[2],
       { value: 125 },
       'value',
     ]);
     expect(getElement({ getId, arr }, 'id03.data.multiplier')).toEqual([
+      arr[2],
       { subdata: { value: 125 }, multiplier: 126 },
       'multiplier',
     ]);
 
     expect(getElement({ getId, arr }, 'id04.data.other')).toEqual([
+      undefined,
       undefined,
       'other',
     ]);
