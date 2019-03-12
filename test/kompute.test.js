@@ -3,6 +3,7 @@ const omit = require('lodash.omit');
 const {
   findItemById,
   findNodeByProp,
+  findNodesByProp,
   findDependentNodes,
   splitPath,
   getValue,
@@ -62,6 +63,41 @@ describe('Utils', () => {
 
     node = findNodeByProp({ tree }, 'element1.value');
     expect(node).not.toBeDefined();
+  });
+
+  test('findNodesByProp', () => {
+    const tree = [
+      {
+        prop: 'el1.data.subdata.value',
+        dependsOn: ['element2.value'],
+        compute: (item, [element1]) => element1.value * 2,
+      },
+      {
+        prop: 'el1.data.subdata.multiplier',
+        dependsOn: ['element2.value'],
+        compute: (item, [element1]) => element1.value * 2,
+      },
+      {
+        prop: 'el1.data',
+        dependsOn: ['element2.value'],
+        compute: (item, [element1]) => element1.value * 2,
+      },
+    ];
+    // with exact path
+    let nodes = findNodesByProp({ tree }, 'el1.data', true);
+    expect(nodes).toHaveLength(1);
+    expect(nodes[0]).toEqual(tree[2]);
+
+    // with relative path
+    nodes = findNodesByProp({ tree }, 'el1.data', false);
+    expect(nodes).toHaveLength(3);
+    expect(nodes).toEqual(tree);
+
+    nodes = findNodesByProp({ tree }, 'el1.data.subdata');
+    expect(nodes).toHaveLength(0);
+
+    nodes = findNodesByProp({ tree }, 'el1.data.subdata', false);
+    expect(nodes).toHaveLength(3);
   });
 
   test('findDependentNodes', () => {
@@ -898,6 +934,11 @@ describe('Utils', () => {
         compute: jest.fn((_, [el2]) => el2.data.value + 1),
       },
       {
+        prop: 'el4.str',
+        dependsOn: ['el3.data'],
+        compute: jest.fn((_, [el3]) => `Result: ${el3.data.result}`),
+      },
+      {
         prop: 'el1.data.multiplier',
         dependsOn: ['el2.data.multiplier'],
         compute: jest.fn((_, [el2]) => el2.data.multiplier + 1),
@@ -906,11 +947,6 @@ describe('Utils', () => {
         prop: 'el3.data.result',
         dependsOn: ['el1.data'],
         compute: jest.fn((_, [el1]) => el1.data.value * el1.data.multiplier),
-      },
-      {
-        prop: 'el4.str',
-        dependsOn: ['el3.data'],
-        compute: jest.fn((_, [el3]) => `Result: ${el3.data.result}`),
       },
     ];
 
@@ -923,7 +959,7 @@ describe('Utils', () => {
         {
           id: 'el1',
           data: {
-            value: 0, // 3 + 1 = 4
+            value: -1, // 3 + 1 = 4
             multiplier: 0, // 2 + 1 = 3
           },
         },
@@ -955,8 +991,8 @@ describe('Utils', () => {
     expect(tree[2].compute.mock.calls.length).toBe(1);
     expect(tree[3].compute.mock.calls.length).toBe(1);
 
-    expect(tree[2].compute.mock.results[0].value).toBe(12);
-    expect(tree[3].compute.mock.results[0].value).toBe('Result: 12');
+    expect(tree[3].compute.mock.results[0].value).toBe(12);
+    expect(tree[1].compute.mock.results[0].value).toBe('Result: 12');
   });
 
   test('wrap and update item directly', () => {
