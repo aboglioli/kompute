@@ -144,7 +144,9 @@ describe('Utils', () => {
     expect(getValue({ getId, arr }, 'id03')).toEqual(arr[2]);
 
     expect(getValue({ getId, arr }, 'id03.data.other')).not.toBeDefined();
-    expect(getValue({ getId, arr }, 'id03.data.subdata.other')).not.toBeDefined();
+    expect(
+      getValue({ getId, arr }, 'id03.data.subdata.other'),
+    ).not.toBeDefined();
     expect(getValue({ getId, arr }, 'id04.value')).not.toBeDefined();
     expect(getValue({ getId, arr }, 'id05')).not.toBeDefined();
     expect(getValue({ getId, arr }, '')).not.toBeDefined();
