@@ -5,6 +5,7 @@ const {
   findNodeByProp,
   findDependentNodes,
   splitPath,
+  getValue,
   checkCircularDependencies,
   makeDependencyTree,
   compute,
@@ -106,6 +107,47 @@ describe('Utils', () => {
     expect(id).toBe('element3');
     expect(path).toBe('');
     expect(prop).toBe('value');
+  });
+
+  test('getValue', () => {
+    const arr = [
+      {
+        id: 'id01',
+        value: 123,
+      },
+      {
+        id: 'id02',
+        data: {
+          value: 124,
+        },
+      },
+      {
+        id: 'id03',
+        data: {
+          subdata: {
+            value: 125,
+          },
+          multiplier: 126,
+        },
+      },
+    ];
+
+    expect(getValue({ getId, arr }, 'id01.value')).toBe(123);
+    expect(getValue({ getId, arr }, 'id02.data.value')).toBe(124);
+    expect(getValue({ getId, arr }, 'id03.data.subdata.value')).toBe(125);
+    expect(getValue({ getId, arr }, 'id03.data.multiplier')).toBe(126);
+    expect(getValue({ getId, arr }, 'id03.data.subdata')).toEqual({
+      value: 125,
+    });
+    expect(getValue({ getId, arr }, 'id01')).toEqual(arr[0]);
+    expect(getValue({ getId, arr }, 'id02')).toEqual(arr[1]);
+    expect(getValue({ getId, arr }, 'id03')).toEqual(arr[2]);
+
+    expect(getValue({ getId, arr }, 'id03.data.other')).not.toBeDefined();
+    expect(getValue({ getId, arr }, 'id03.data.subdata.other')).not.toBeDefined();
+    expect(getValue({ getId, arr }, 'id04.value')).not.toBeDefined();
+    expect(getValue({ getId, arr }, 'id05')).not.toBeDefined();
+    expect(getValue({ getId, arr }, '')).not.toBeDefined();
   });
 
   test('checkCircularDependencies in tree', () => {
@@ -609,9 +651,23 @@ describe('Utils', () => {
   });
 
   test('compute simple dependent properties', () => {
-    const computed = compute({
-      getId,
-      arr: [
+    const computed = compute(
+      {
+        getId,
+        tree: [
+          {
+            prop: 'id02.value',
+            dependsOn: ['id01.value'],
+            compute: (item, [el1]) => `${item.id}:${el1.value}.str2`,
+          },
+          {
+            prop: 'id03.value',
+            dependsOn: ['id01.value'],
+            compute: (item, [el1]) => `${item.id}:${el1.value}.str3`,
+          },
+        ],
+      },
+      [
         {
           id: 'id01',
           value: 'str1',
@@ -625,19 +681,7 @@ describe('Utils', () => {
           value: null,
         },
       ],
-      tree: [
-        {
-          prop: 'id02.value',
-          dependsOn: ['id01.value'],
-          compute: (item, [el1]) => `${item.id}:${el1.value}.str2`,
-        },
-        {
-          prop: 'id03.value',
-          dependsOn: ['id01.value'],
-          compute: (item, [el1]) => `${item.id}:${el1.value}.str3`,
-        },
-      ],
-    });
+    );
     expect(computed).toBeDefined();
     expect(computed).toHaveLength(3);
     expect(computed[0]).toEqual({ id: 'id01', value: 'str1' });
@@ -652,9 +696,28 @@ describe('Utils', () => {
       return true;
     };
 
-    const computed = compute({
-      getId,
-      arr: [
+    const computed = compute(
+      {
+        getId,
+        tree: [
+          {
+            prop: 'id02.computed',
+            dependsOn: ['id01.computed', 'id03.computed'],
+            compute: computeFn,
+          },
+          {
+            prop: 'id03.computed',
+            dependsOn: ['id04.computed'],
+            compute: computeFn,
+          },
+          {
+            prop: 'id04.computed',
+            dependsOn: ['id01.computed'],
+            compute: computeFn,
+          },
+        ],
+      },
+      [
         {
           id: 'id01',
           computed: false,
@@ -672,24 +735,7 @@ describe('Utils', () => {
           computed: false,
         },
       ],
-      tree: [
-        {
-          prop: 'id02.computed',
-          dependsOn: ['id01.computed', 'id03.computed'],
-          compute: computeFn,
-        },
-        {
-          prop: 'id03.computed',
-          dependsOn: ['id04.computed'],
-          compute: computeFn,
-        },
-        {
-          prop: 'id04.computed',
-          dependsOn: ['id01.computed'],
-          compute: computeFn,
-        },
-      ],
-    });
+    );
     expect(computed[0]).toEqual({ id: 'id01', computed: false });
     expect(computed[1]).toEqual({ id: 'id02', computed: true });
     expect(computed[2]).toEqual({ id: 'id03', computed: true });
@@ -697,9 +743,24 @@ describe('Utils', () => {
   });
 
   test('compute complex dependent properties', () => {
-    const computed = compute({
-      getId,
-      arr: [
+    const computed = compute(
+      {
+        getId,
+        tree: [
+          {
+            prop: 'id02.value',
+            dependsOn: ['id01.value', 'id03.other', 'id03.value'],
+            compute: (item, [el1, el3]) =>
+              `${item.id}:${el1.value}.(${el3.value}-${el3.other}).str2`,
+          },
+          {
+            prop: 'id03.value',
+            dependsOn: ['id01.value'],
+            compute: (item, [el1]) => `${item.id}:${el1.value}.str3`,
+          },
+        ],
+      },
+      [
         {
           id: 'id01',
           value: 'str1',
@@ -714,20 +775,7 @@ describe('Utils', () => {
           other: 'other3',
         },
       ],
-      tree: [
-        {
-          prop: 'id02.value',
-          dependsOn: ['id01.value', 'id03.other', 'id03.value'],
-          compute: (item, [el1, el3]) =>
-            `${item.id}:${el1.value}.(${el3.value}-${el3.other}).str2`,
-        },
-        {
-          prop: 'id03.value',
-          dependsOn: ['id01.value'],
-          compute: (item, [el1]) => `${item.id}:${el1.value}.str3`,
-        },
-      ],
-    });
+    );
     expect(computed).toBeDefined();
     expect(computed).toHaveLength(3);
     expect(computed[0]).toEqual({ id: 'id01', value: 'str1' });
@@ -761,9 +809,12 @@ describe('Utils', () => {
       },
     ];
 
-    const computed = compute({
-      getId,
-      arr: [
+    const computed = compute(
+      {
+        getId,
+        tree,
+      },
+      [
         {
           id: 'id01',
           data: {
@@ -782,8 +833,7 @@ describe('Utils', () => {
           data: { result: { value: 0 } },
         },
       ],
-      tree,
-    });
+    );
     expect(computed).toBeDefined();
     expect(computed).toHaveLength(3);
     expect(computed[0]).toEqual({
@@ -840,9 +890,12 @@ describe('Utils', () => {
       },
     ];
 
-    const computed = compute({
-      getId,
-      arr: [
+    const computed = compute(
+      {
+        getId,
+        tree,
+      },
+      [
         {
           id: 'el1',
           data: {
@@ -868,8 +921,7 @@ describe('Utils', () => {
           str: '',
         },
       ],
-      tree,
-    });
+    );
     expect(computed[1].data).toEqual({ value: 4, multiplier: 3 });
     expect(computed[2].data).toEqual({ result: 12 });
     expect(computed[3].str).toBe('Result: 12');
