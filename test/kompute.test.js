@@ -10,7 +10,7 @@ const {
   getElement,
   checkCircularDependencies,
   makeDependencyTree,
-  compute,
+  computeAll,
   wrap,
 } = require('../lib/kompute');
 const kompute = require('../lib');
@@ -714,7 +714,7 @@ describe('Utils', () => {
   });
 
   test('compute simple dependent properties', () => {
-    const computed = compute(
+    const computed = computeAll(
       {
         getId,
         tree: [
@@ -759,7 +759,7 @@ describe('Utils', () => {
       return true;
     };
 
-    const computed = compute(
+    const computed = computeAll(
       {
         getId,
         tree: [
@@ -806,7 +806,7 @@ describe('Utils', () => {
   });
 
   test('compute complex dependent properties', () => {
-    const computed = compute(
+    const computed = computeAll(
       {
         getId,
         tree: [
@@ -876,7 +876,7 @@ describe('Utils', () => {
       },
     ];
 
-    const computed = compute(
+    const computed = computeAll(
       {
         getId,
         tree,
@@ -958,7 +958,7 @@ describe('Utils', () => {
       },
     ];
 
-    const computed = compute(
+    const computed = computeAll(
       {
         getId,
         tree,
@@ -1005,6 +1005,17 @@ describe('Utils', () => {
 
   test('wrap and update item directly', () => {
     let calls = 0;
+    const arr = [
+      {
+        id: 'id01',
+        data: 23,
+        multiplier: 2,
+      },
+      {
+        id: 'id02',
+        data: 0,
+      },
+    ];
     const wrapped = wrap(
       {
         getId,
@@ -1019,21 +1030,14 @@ describe('Utils', () => {
           },
         ],
       },
-      [
-        {
-          id: 'id01',
-          data: 23,
-          multiplier: 2,
-        },
-        {
-          id: 'id02',
-          data: 0,
-        },
-      ],
+      arr,
     );
     expect(wrapped[1].data).toBe(0);
 
     wrapped[0].data = 15;
+    // TODO: only arr is updated after computation
+    // Fixed, but it needs refactoring in lib
+    console.log(wrapped, arr);
     expect(wrapped[1].data).toBe(30);
 
     // item 1 is not watching for changes on "multiplier"
