@@ -1005,9 +1005,21 @@ describe('Utils', () => {
 
   test('wrap and update item directly', () => {
     let calls = 0;
-    const wrapped = wrap({
-      getId,
-      arr: [
+    const wrapped = wrap(
+      {
+        getId,
+        tree: [
+          {
+            prop: 'id02.data',
+            dependsOn: ['id01.data'],
+            compute: (_, [el1]) => {
+              calls++;
+              return el1.data * el1.multiplier;
+            },
+          },
+        ],
+      },
+      [
         {
           id: 'id01',
           data: 23,
@@ -1018,17 +1030,7 @@ describe('Utils', () => {
           data: 0,
         },
       ],
-      tree: [
-        {
-          prop: 'id02.data',
-          dependsOn: ['id01.data'],
-          compute: (_, [el1]) => {
-            calls++;
-            return el1.data * el1.multiplier;
-          },
-        },
-      ],
-    });
+    );
     expect(wrapped[1].data).toBe(0);
 
     wrapped[0].data = 15;
@@ -1053,9 +1055,12 @@ describe('Utils', () => {
       },
     ];
 
-    const wrapped = wrap({
-      getId,
-      arr: [
+    const wrapped = wrap(
+      {
+        getId,
+        tree,
+      },
+      [
         {
           id: 'id01',
           data: {
@@ -1070,8 +1075,7 @@ describe('Utils', () => {
           },
         },
       ],
-      tree,
-    });
+    );
     expect(wrapped[1].data).toEqual({ value: 24 });
 
     wrapped[0].data.value = 15;
