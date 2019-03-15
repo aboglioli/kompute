@@ -1037,7 +1037,6 @@ describe('Utils', () => {
     wrapped[0].data = 15;
     // TODO: only arr is updated after computation
     // Fixed, but it needs refactoring in lib
-    console.log(wrapped, arr);
     expect(wrapped[1].data).toBe(30);
 
     // item 1 is not watching for changes on "multiplier"
