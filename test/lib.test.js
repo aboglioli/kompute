@@ -67,5 +67,16 @@ describe('Lib', () => {
 
     // value2 = value3 * value1 + value4
     expect(data[1].value).toBe(5 * 3 * 5 + 5 * (5 * 3));
+
+    objToChange.value = 6;
+
+    // value3 = value1 * 3
+    expect(data[2].value).toBe(6 * 3);
+
+    // value4 = value 1 * value3
+    expect(data[3].value).toBe(6 * (6 * 3));
+
+    // value2 = value3 * value1 + value4
+    expect(data[1].value).toBe(6 * 3 * 6 + 6 * (6 * 3));
   });
 });
