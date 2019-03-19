@@ -151,6 +151,27 @@ const simple = [
   },
 ];
 
+const cascadeDependencies = [
+  {
+    id: 'c1',
+    value: 2,
+  },
+  {
+    id: 'c2',
+    value: {
+      dependsOn: ['c1.value'],
+      compute: (_, [c1]) => c1.value + 1,
+    },
+  },
+  {
+    id: 'c3',
+    value: {
+      dependsOn: 'c2.value',
+      compute: (_, [c2]) => c2.value + 1,
+    },
+  },
+];
+
 // Dependency between kompute objects
 const complexDependencies = [
   {
@@ -217,6 +238,7 @@ const deepFields = [
 module.exports = {
   getProducts: () => cloneDeep(products),
   getSimple: () => cloneDeep(simple),
+  getCascadeDependencies: () => cloneDeep(cascadeDependencies),
   getComplexDependencies: () => cloneDeep(complexDependencies),
   getDeepFields: () => cloneDeep(deepFields),
 };

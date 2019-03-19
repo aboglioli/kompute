@@ -1,5 +1,5 @@
 const { makeDependencyTree, computeAll } = require('../lib/kompute');
-const { getComplexDependencies } = require('./data');
+const { getComplexDependencies, getCascadeDependencies } = require('./data');
 
 const getId = item => item.id;
 
@@ -94,6 +94,27 @@ describe('Compute', () => {
     expect(computed[1]).toEqual({ id: 'id02', computed: true });
     expect(computed[2]).toEqual({ id: 'id03', computed: true });
     expect(computedOrder).toEqual(['id04', 'id03', 'id02']);
+  });
+
+  test('compute cascade dependencies', () => {
+    const arr = getCascadeDependencies();
+    const tree = makeDependencyTree(arr);
+    const computed = computeAll({ getId, tree }, arr);
+
+    expect(computed).toEqual([
+      {
+        id: 'c1',
+        value: 2,
+      },
+      {
+        id: 'c2',
+        value: 3,
+      },
+      {
+        id: 'c3',
+        value: 4,
+      },
+    ]);
   });
 
   test('compute complex dependent properties', () => {

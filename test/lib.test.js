@@ -1,6 +1,11 @@
 const kompute = require('../lib');
 
-const { getSimple, getComplexDependencies } = require('./data');
+const {
+  getSimple,
+  getComplexDependencies,
+  getDeepFields,
+  getProducts,
+} = require('./data');
 
 describe('Lib', () => {
   test('pass array as first argument', () => {
@@ -78,5 +83,299 @@ describe('Lib', () => {
 
     // value2 = value3 * value1 + value4
     expect(data[1].value).toBe(6 * 3 * 6 + 6 * (6 * 3));
+  });
+
+  test('deep fields', () => {
+    const data = kompute(getDeepFields());
+    expect(data).toEqual([
+      {
+        id: '001',
+        data: {
+          value: 9,
+        },
+      },
+      {
+        id: '002',
+        data: {
+          value: 2 * 9,
+        },
+      },
+      {
+        id: '003',
+        data: {
+          value: 9 + 18,
+        },
+      },
+    ]);
+
+    data[0].data.value = 10;
+
+    expect(data).toEqual([
+      {
+        id: '001',
+        data: {
+          value: 10,
+        },
+      },
+      {
+        id: '002',
+        data: {
+          value: 2 * 10,
+        },
+      },
+      {
+        id: '003',
+        data: {
+          value: 10 + 20,
+        },
+      },
+    ]);
+  });
+
+  test('products', () => {
+    const data = kompute(getProducts());
+
+    expect(data).toEqual([
+      {
+        id: 'product1',
+        name: 'Product 1',
+        cost: {
+          value: 5,
+          quantity: {
+            value: 1,
+            unit: 'kg',
+          },
+        },
+      },
+      {
+        id: 'product2',
+        name: 'Product 2',
+        cost: {
+          value: 10,
+          quantity: {
+            value: 500,
+            unit: 'g',
+          },
+        },
+      },
+      {
+        id: 'product3',
+        name: 'Product 3',
+        cost: {
+          value: 15,
+          quantity: {
+            value: 1,
+            unit: 'u',
+          },
+        }, // $15
+        composition: [
+          {
+            // $10
+            of: 'product1',
+            quantity: {
+              value: 2000,
+              unit: 'g',
+            },
+          },
+          {
+            // $5
+            of: 'product2',
+            quantity: {
+              value: 0.25,
+              unit: 'kg',
+            },
+          },
+        ],
+      },
+      {
+        id: 'product4',
+        name: 'Product 4',
+        cost: {
+          value: 35,
+          quantity: {
+            value: 1,
+            unit: 'u',
+          },
+        }, // $35
+        composition: [
+          {
+            // $5
+            of: 'product2',
+            quantity: {
+              value: 250,
+              unit: 'g',
+            },
+          },
+          {
+            // $30
+            of: 'product3',
+            quantity: {
+              value: 2,
+              unit: 'u',
+            },
+          },
+        ],
+      },
+      {
+        id: 'product5',
+        name: 'Product 5',
+        cost: {
+          value: 77.5,
+          quantity: {
+            value: 1,
+            unit: 'u',
+          },
+        }, // $77.5
+        composition: [
+          {
+            // $7.5
+            of: 'product3',
+            quantity: {
+              value: 0.5,
+              unit: 'u',
+            },
+          },
+          {
+            // $70
+            of: 'product4',
+            quantity: {
+              value: 2,
+              unit: 'u',
+            },
+          },
+        ],
+      },
+    ]);
+
+    // Change product1 cost
+    // $5 x 1 kg === $10 x 2000 g
+    data[0].cost = {
+      value: 10,
+      quantity: {
+        value: 2000,
+        unit: 'g',
+      },
+    };
+
+    expect(data[2]).toEqual({
+      id: 'product3',
+      name: 'Product 3',
+      cost: {
+        value: 15,
+        quantity: {
+          value: 1,
+          unit: 'u',
+        },
+      },
+      composition: [
+        {
+          of: 'product1',
+          quantity: {
+            value: 2000,
+            unit: 'g',
+          },
+        },
+        {
+          of: 'product2',
+          quantity: {
+            value: 0.25,
+            unit: 'kg',
+          },
+        },
+      ],
+    });
+
+    // Change product2 cost
+    data[1].cost = {
+      value: 20,
+      quantity: {
+        value: 100,
+        unit: 'g',
+      },
+    };
+
+    expect(data[2]).toEqual({
+      id: 'product3',
+      name: 'Product 3',
+      cost: {
+        value: 2 * (5 / 1) + 0.25 * (20 / 0.1), // $60
+        quantity: {
+          value: 1,
+          unit: 'u',
+        },
+      },
+      composition: [
+        {
+          of: 'product1',
+          quantity: {
+            value: 2000,
+            unit: 'g',
+          },
+        },
+        {
+          of: 'product2',
+          quantity: {
+            value: 0.25,
+            unit: 'kg',
+          },
+        },
+      ],
+    });
+
+    expect(data[3]).toEqual({
+      id: 'product4',
+      name: 'Product 4',
+      cost: {
+        value: 0.25 * (20 / 0.1) + 2 * 60, // $120.5
+        quantity: {
+          value: 1,
+          unit: 'u',
+        },
+      },
+      composition: [
+        {
+          of: 'product2',
+          quantity: {
+            value: 250,
+            unit: 'g',
+          },
+        },
+        {
+          of: 'product3',
+          quantity: {
+            value: 2,
+            unit: 'u',
+          },
+        },
+      ],
+    });
+
+    expect(data[4]).toEqual({
+      id: 'product5',
+      name: 'Product 5',
+      cost: {
+        value: 0.5 * 60 + 2 * 120.5, // $271
+        quantity: {
+          value: 1,
+          unit: 'u',
+        },
+      },
+      composition: [
+        {
+          of: 'product3',
+          quantity: {
+            value: 0.5,
+            unit: 'u',
+          },
+        },
+        {
+          of: 'product4',
+          quantity: {
+            value: 2,
+            unit: 'u',
+          },
+        },
+      ],
+    });
   });
 });

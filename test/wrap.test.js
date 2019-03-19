@@ -1,4 +1,6 @@
-const { wrap } = require('../lib/kompute');
+const { wrap, makeDependencyTree } = require('../lib/kompute');
+const { getCascadeDependencies } = require('./data');
+
 const getId = item => item.id;
 
 describe('Wrap', () => {
@@ -202,5 +204,16 @@ describe('Wrap', () => {
     expect(tree[0].compute.mock.results[0].value).toEqual(30);
     expect(tree[0].compute.mock.results[1].value).toEqual(45);
     expect(tree[0].compute.mock.results[2].value).toEqual(10);
+  });
+
+  test('wrap cascade dependencies', () => {
+    const arr = getCascadeDependencies();
+    const tree = makeDependencyTree(arr);
+    const wrapped = wrap({ getId, tree }, arr);
+
+    wrapped[0].value = 3;
+
+    expect(wrapped[1].value).toBe(4);
+    expect(wrapped[2].value).toBe(5);
   });
 });
