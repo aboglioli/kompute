@@ -183,7 +183,7 @@ const complexDependencies = [
     relatedTo: 'element3',
     value: {
       dependsOn: item => [
-        `${item.relatedTo}.value`,
+        `${item.relatedTo}.value`, //element3.value
         'element1.value',
         'element4.value',
       ],

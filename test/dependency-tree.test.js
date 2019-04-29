@@ -1,7 +1,7 @@
 const omit = require('lodash.omit');
 
-const { makeDependencyTree } = require('../lib/kompute');
-const { getSimple, getComplexDependencies } = require('./data');
+const { makeDependencyTree, orderTree } = require('../lib/kompute');
+const { getSimple, getComplexDependencies, getCascadeDependencies } = require('./data');
 
 const compareTree = (originalTree, tree) => {
   expect(originalTree.length).toBe(tree.length);
@@ -140,5 +140,11 @@ describe('Dependency tree', () => {
     } catch (err) {
       expect(err.message).toBe('compute must be a function');
     }
+  });
+
+  test('order simple tree', () => {
+    const tree = makeDependencyTree(getSimple());
+    const orderedTree = orderTree(tree);
+    // TODO: implement test
   });
 });
